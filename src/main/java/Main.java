@@ -6,6 +6,7 @@ public class Main {
         PostgreSQLJDBC database = new PostgreSQLJDBC();
 
         database.getConnection();
+        database.createTables();
     }
 
 }
