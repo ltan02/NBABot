@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class PostgreSQLJDBC {
 
@@ -88,6 +89,23 @@ public class PostgreSQLJDBC {
         } catch(SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getUserID(String username) {
+        return 0;
+    }
+
+    //[gameNumber, teamName]
+    public ArrayList<String[]> getPredictions(String date, int betterID) {
+        return new ArrayList<>();
+    }
+
+    public void updatePoints(String username, int newPoints) {
+
+    }
+
+    public boolean inDatabase(String username) {
+        return false;
     }
 
 }
