@@ -1,7 +1,5 @@
 package database;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -9,11 +7,8 @@ import java.sql.Statement;
 
 public class PostgreSQLJDBC {
 
-    Connection c;
-    Statement stmt;
-
-    public void getConnection() {
-        c = null;
+    public Connection getConnection() {
+        Connection c = null;
         try {
             Class.forName("org.postgresql.Driver");
             c = DriverManager
@@ -24,38 +19,75 @@ public class PostgreSQLJDBC {
             System.err.println(e.getClass().getName()+": " +e.getMessage());
             System.exit(0);
         }
-        System.out.println("Works");
+        return c;
     }
 
     public void createTables() {
         try {
-            stmt = c.createStatement();
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
 
-            String remove1 = "DROP TABLE IF EXISTS guild_points";
+            String remove1 = "DROP TABLE IF EXISTS guild_points cascade";
             stmt.executeUpdate(remove1);
 
-            String remove2 = "DROP TABLE IF EXISTS guild_predictions";
+            String remove2 = "DROP TABLE IF EXISTS guild_predictions cascade";
             stmt.executeUpdate(remove2);
 
             String createGuildPoints = "CREATE TABLE guild_points (" +
-                    "id INT PRIMARY KEY," +
+                    "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                     "guildName VARCHAR(20) NOT NULL," +
                     "points INT NOT NULL)";
             stmt.executeUpdate(createGuildPoints);
 
             String createGuildPredictions = "CREATE TABLE guild_predictions (" +
-                    "predictionID INT PRIMARY KEY," +
+                    "predictionID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                     "gameNumber INT NOT NULL," +
                     "teamName VARCHAR(5) NOT NULL," +
                     "predictionDate VARCHAR(20) NOT NULL," +
                     "betterID INT NOT NULL," +
                     "FOREIGN KEY(betterID) REFERENCES guild_points(id))";
             stmt.executeUpdate(createGuildPredictions);
+
+            stmt.close();
+            c.close();
         } catch(SQLException e) {
             e.printStackTrace();
         }
+    }
 
-        System.out.println("here");
+    public void addMember(String username) {
+        try {
+            Connection c = this.getConnection();
+            c.setAutoCommit(false);
+            Statement stmt = c.createStatement();
+
+            String addMember = String.format("INSERT INTO guild_points(guildName, points) VALUES ('%s', %d)", username, 0);
+            stmt.executeUpdate(addMember);
+
+            stmt.close();
+            c.commit();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addPrediction(int gameNumber, String teamName, String predictionDate, int betterID) {
+        try {
+            Connection c = this.getConnection();
+            c.setAutoCommit(false);
+            Statement stmt = c.createStatement();
+
+            String addMember = String.format("INSERT INTO guild_predictions(gameNumber, teamName, predictionDate, betterID) " +
+                    "VALUES (%d, '%s', '%s', %d)", gameNumber, teamName, predictionDate, betterID);
+            stmt.executeUpdate(addMember);
+
+            stmt.close();
+            c.commit();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 }
