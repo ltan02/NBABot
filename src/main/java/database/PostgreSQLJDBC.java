@@ -1,7 +1,13 @@
+package database;
+
 import java.sql.*;
 import java.util.ArrayList;
 
 public class PostgreSQLJDBC {
+
+    public PostgreSQLJDBC() {
+        this.createTables();
+    }
 
     public Connection getConnection() {
         Connection c = null;
@@ -152,6 +158,28 @@ public class PostgreSQLJDBC {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    //[guildName, points]
+    public ArrayList<String[]> getLeaderboard() {
+        ArrayList<String[]> leaderboard = new ArrayList<>();
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String getLeaderboard = "SELECT * FROM guild_points ORDER BY points DESC";
+            ResultSet rs = stmt.executeQuery(getLeaderboard);
+
+            while(rs.next()) {
+                String guildName = rs.getString("guildName");
+                String points = String.valueOf(rs.getInt("points"));
+                String[] output = {guildName, points};
+                leaderboard.add(output);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return leaderboard;
     }
 
     public void updatePoints(String username, int newPoints) {

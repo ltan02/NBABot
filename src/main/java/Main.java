@@ -1,15 +1,33 @@
+import commands.Help;
+import commands.Join;
+import commands.Leaderboard;
+import database.PostgreSQLJDBC;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.utils.Compression;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
+
 import java.util.ArrayList;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        JDAConnection jda = new JDAConnection();
+        JDA jda = JDABuilder.createDefault(System.getenv("discord_token"))
+                .setActivity(Activity.playing(",help"))
+                .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
+                .setCompression(Compression.NONE)
+                .setBulkDeleteSplittingEnabled(false)
+                .build();
+
+        PostgreSQLJDBC database = new PostgreSQLJDBC();
+
+        jda.addEventListener(new Join(database));
+        jda.addEventListener(new Leaderboard(database));
+        jda.addEventListener(new Help());
     }
 
-    public void testDatabase() {
-        PostgreSQLJDBC database = new PostgreSQLJDBC();
-        database.createTables();
-
+    public void testDatabase(PostgreSQLJDBC database) {
         database.addMember("Lance");
         database.addMember("Steven");
 
