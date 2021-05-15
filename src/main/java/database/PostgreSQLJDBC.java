@@ -1,9 +1,6 @@
 package database;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class PostgreSQLJDBC {
@@ -28,10 +25,10 @@ public class PostgreSQLJDBC {
             Connection c = this.getConnection();
             Statement stmt = c.createStatement();
 
-            String remove1 = "DROP TABLE IF EXISTS guild_points cascade";
+            String remove1 = "DROP TABLE IF EXISTS guild_predictions";
             stmt.executeUpdate(remove1);
 
-            String remove2 = "DROP TABLE IF EXISTS guild_predictions cascade";
+            String remove2 = "DROP TABLE IF EXISTS guild_points";
             stmt.executeUpdate(remove2);
 
             String createGuildPoints = "CREATE TABLE guild_points (" +
@@ -92,20 +89,96 @@ public class PostgreSQLJDBC {
     }
 
     public int getUserID(String username) {
-        return 0;
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String getID = String.format("SELECT * FROM guild_points WHERE guildName = '%s'", username);
+            ResultSet rs = stmt.executeQuery(getID);
+
+            if(rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
-    //[gameNumber, teamName]
-    public ArrayList<String[]> getPredictions(String date, int betterID) {
-        return new ArrayList<>();
+    //Date (betterID) -> predictionIDs
+    //betterID is optional
+    public ArrayList<Integer> getPredictions(String date, int betterID) {
+        ArrayList<Integer> predictions = new ArrayList<>();
+
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            if(betterID != -1) {
+                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND betterID = %d", date, betterID);
+                ResultSet rs = stmt.executeQuery(getPrediction);
+
+                while (rs.next()) {
+                    predictions.add(rs.getInt("predictionID"));
+                }
+            } else {
+                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s'", date);
+                ResultSet rs = stmt.executeQuery(getPrediction);
+
+                while(rs.next()) {
+                    predictions.add(rs.getInt("predictionID"));
+                }
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return predictions;
+    }
+
+    public int getPoints(String username) {
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            if(this.inDatabase(username)) {
+                String getPoints = String.format("SELECT * FROM guild_points WHERE guildName = '%s'", username);
+                ResultSet rs = stmt.executeQuery(getPoints);
+
+                if(rs.next()) {
+                    return rs.getInt("points");
+                }
+            } else {
+                System.out.println("User is not in database");
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public void updatePoints(String username, int newPoints) {
+        try {
+            Connection c = this.getConnection();
+            c.setAutoCommit(false);
+            Statement stmt = c.createStatement();
 
+            if(this.inDatabase(username)) {
+                String update = String.format("UPDATE guild_points set points = %d WHERE guildName = '%s'", newPoints, username);
+                stmt.executeUpdate(update);
+                c.commit();
+            } else {
+                System.out.println("User is not in database");;
+            }
+            stmt.close();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean inDatabase(String username) {
-        return false;
+        int id = this.getUserID(username);
+        return id != -1;
     }
 
 }
