@@ -1,6 +1,7 @@
 import commands.Help;
 import commands.Join;
 import commands.Leaderboard;
+import commands.Stats;
 import database.PostgreSQLJDBC;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -21,10 +22,13 @@ public class Main {
                 .build();
 
         PostgreSQLJDBC database = new PostgreSQLJDBC();
+        database.addMember("Steven");
+        database.updatePoints("Steven", 2);
 
         jda.addEventListener(new Join(database));
         jda.addEventListener(new Leaderboard(database));
         jda.addEventListener(new Help());
+        jda.addEventListener(new Stats(database));
     }
 
     public void testDatabase(PostgreSQLJDBC database) {
