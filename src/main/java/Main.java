@@ -1,12 +1,13 @@
-import database.PostgreSQLJDBC;
-
 import java.util.ArrayList;
 
 public class Main {
 
-    public static void main(String[] args) {
-        PostgreSQLJDBC database = new PostgreSQLJDBC();
+    public static void main(String[] args) throws Exception {
+        JDAConnection jda = new JDAConnection();
+    }
 
+    public void testDatabase() {
+        PostgreSQLJDBC database = new PostgreSQLJDBC();
         database.createTables();
 
         database.addMember("Lance");
