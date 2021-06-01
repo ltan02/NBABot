@@ -20,12 +20,14 @@ public class Leaderboard extends ListenerAdapter {
         String[] message = event.getMessage().getContentRaw().split(" ");
 
         if(message[0].equalsIgnoreCase(",top")) {
-            ArrayList<String[]> leaderboard = database.getLeaderboard();
+            ArrayList<String[]> leaderboard = database.getLeaderboard(); //[guildName, points]
 
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Leaderboard");
             for(int i = 0; i < leaderboard.size(); i++) {
-                eb.addField("", (i+1) + ". " + leaderboard.get(i)[0] + " - " + leaderboard.get(i)[1], false);
+                String guildName = leaderboard.get(i)[0];
+                String points = leaderboard.get(i)[1];
+                eb.addField((i+1) + ". " + guildName, guildName + " has scored a total of " + points + " points.", false);
             }
             event.getChannel().sendMessage(eb.build()).queue();
         }

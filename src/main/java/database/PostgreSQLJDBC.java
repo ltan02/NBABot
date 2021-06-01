@@ -35,6 +35,9 @@ public class PostgreSQLJDBC {
             String remove2 = "DROP TABLE IF EXISTS guild_points";
             stmt.executeUpdate(remove2);
 
+            //String remove3 = "DROP TABLE IF EXISTS games";
+            //stmt.executeUpdate(remove3);
+
             String createGuildPoints = "CREATE TABLE guild_points (" +
                     "id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
                     "guildName VARCHAR(20) NOT NULL," +
@@ -50,7 +53,36 @@ public class PostgreSQLJDBC {
                     "FOREIGN KEY(betterID) REFERENCES guild_points(id))";
             stmt.executeUpdate(createGuildPredictions);
 
+            String createGames = "CREATE TABLE IF NOT EXISTS games (" +
+                    "gameID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
+                    "date VARCHAR(20) NOT NULL," +
+                    "team1ShortName VARCHAR(5) NOT NULL," +
+                    "team1FullName VARCHAR(40) NOT NULL," +
+                    "team2ShortName VARCHAR(5) NOT NULL," +
+                    "team2FullName VARCHAR(40) NOT NULL," +
+                    "score1 INT NOT NULL," +
+                    "score2 INT NOT NULL)";
+            stmt.executeUpdate(createGames);
+
             stmt.close();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addGameInformation(String date, String team1ShortName, String team1FullName, String team2ShortName, String team2FullName, int score1, int score2) {
+        try {
+            Connection c = this.getConnection();
+            c.setAutoCommit(false);
+            Statement stmt = c.createStatement();
+
+            String addGame = String.format("INSERT INTO games(date, team1ShortName, team1FullName, team2ShortName, team2FullName, score1, score2) VALUES " +
+                    "('%s', '%s', '%s', '%s', '%s', %d, %d)", date, team1ShortName, team1FullName, team2ShortName, team2FullName, score1, score2);
+            stmt.executeUpdate(addGame);
+
+            stmt.close();
+            c.commit();
             c.close();
         } catch(SQLException e) {
             e.printStackTrace();
@@ -90,6 +122,29 @@ public class PostgreSQLJDBC {
         } catch(SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public ArrayList<String[]> getGames(String date) {
+        ArrayList<String[]> games = new ArrayList<>();
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String getGame = String.format("SELECT * FROM games WHERE date = '%s'", date);
+            ResultSet rs = stmt.executeQuery(getGame);
+
+            while(rs.next()) {
+                String team1ShortName = rs.getString("team1ShortName");
+                String team1FullName = rs.getString("team1FullName");
+                String team2ShortName = rs.getString("team2ShortName");
+                String team2FullName = rs.getString("team2FullName");
+                String[] gameInfo = {team1ShortName, team1FullName, team2ShortName, team2FullName};
+                games.add(gameInfo);
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return games;
     }
 
     public int getUserID(String username) {

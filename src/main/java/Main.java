@@ -1,7 +1,4 @@
-import commands.Help;
-import commands.Join;
-import commands.Leaderboard;
-import commands.Stats;
+import commands.*;
 import database.PostgreSQLJDBC;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -29,6 +26,16 @@ public class Main {
         jda.addEventListener(new Leaderboard(database));
         jda.addEventListener(new Help());
         jda.addEventListener(new Stats(database));
+        jda.addEventListener(new Games(database));
+
+        APIMain api = new APIMain();
+        //ArrayList<String[]> games = api.getGames("2021-06-02", "2021-06-01");
+        /*
+        for(int i = 0; i < games.size(); i++) {
+            String[] current = games.get(i);
+            database.addGameInformation("2021-06-02", current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
+        }
+        */
     }
 
     public void testDatabase(PostgreSQLJDBC database) {
