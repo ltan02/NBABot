@@ -27,6 +27,7 @@ public class Main {
         jda.addEventListener(new Help());
         jda.addEventListener(new Stats(database));
         jda.addEventListener(new Games(database));
+        jda.addEventListener(new MakePrediction(database));
 
         APIMain api = new APIMain();
         //ArrayList<String[]> games = api.getGames("2021-06-02", "2021-06-01");

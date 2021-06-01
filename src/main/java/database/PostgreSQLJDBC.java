@@ -194,6 +194,32 @@ public class PostgreSQLJDBC {
         return predictions;
     }
 
+    public Integer getPrediction(String date, int betterID, int gameNumber) {
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            if(betterID != -1) {
+                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND betterID = %d AND gameNumber = %d", date, betterID, gameNumber);
+                ResultSet rs = stmt.executeQuery(getPrediction);
+
+                if (rs.next()) {
+                    return rs.getInt("predictionID");
+                }
+            } else {
+                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND gameNumber = %d", date, gameNumber);
+                ResultSet rs = stmt.executeQuery(getPrediction);
+
+                if(rs.next()) {
+                    return rs.getInt("predictionID");
+                }
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public int getPoints(String username) {
         try {
             Connection c = this.getConnection();

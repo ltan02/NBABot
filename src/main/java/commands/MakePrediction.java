@@ -1,0 +1,77 @@
+package commands;
+
+import database.PostgreSQLJDBC;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Objects;
+
+public class MakePrediction extends ListenerAdapter {
+
+    PostgreSQLJDBC database;
+
+    public MakePrediction(PostgreSQLJDBC _database) {
+        database = _database;
+    }
+
+    @Override
+    public void onMessageReceived(MessageReceivedEvent event) {
+        String[] message = event.getMessage().getContentRaw().split(" ");
+        if(message[0].equals(",mp")) {
+            if(database.inDatabase(Objects.requireNonNull(event.getMember()).getUser().getName())) {
+                if (message.length == 3) {
+                    String username = event.getMember().getUser().getName();
+
+                    int gameNumber = 0;
+
+                    try {
+                        gameNumber = Integer.parseInt(message[1]);
+                    } catch (NumberFormatException e) {
+                        event.getChannel().sendMessage("Please enter a valid input of the form: **,mp <game number> <team name>**. " +
+                                "For example, if the Golden State Warriors is playing in game 1, then input: **,mp 1 GSW**").queue();
+                        return;
+                    }
+
+                    String teamName = message[2].toUpperCase(Locale.ROOT);
+
+                    ArrayList<String[]> games = database.getGames("2021-06-02");
+
+                    if (checkValidTeam(gameNumber-1, teamName, games)) {
+                        if (!madePrediction(gameNumber-1, username)) {
+                            database.addPrediction(gameNumber-1, teamName, "2021-06-02", database.getUserID(username));
+                            //Message saying that prediction went through (command for changing prediction)
+                            event.getChannel().sendMessage("Your prediction for " + teamName + " in game " + gameNumber + " has been processed. " +
+                                    "If you wish to change your prediction, please use the **,cp** command.").queue();
+                        } else {
+                            event.getChannel().sendMessage("You already made a prediction for game " + gameNumber + ". " +
+                                    "If you wish to change your bet, please use the **,cp** command.").queue();
+                        }
+                    } else {
+                        event.getChannel().sendMessage("The teams playing in game " + gameNumber + " are **" +
+                                games.get(gameNumber-1)[1] + "** and **" + games.get(gameNumber-1)[3] + "**").queue();
+                    }
+
+                } else {
+                    event.getChannel().sendMessage("Please enter a valid input of the form: **,mp <game number> <team name>**. " +
+                            "For example, if the Golden State Warriors is playing in game 1, then input: **,mp 1 GSW**").queue();
+                }
+            } else {
+                event.getChannel().sendMessage("You have already joined the BettingBot.").queue();
+            }
+        }
+    }
+
+    public boolean checkValidTeam(int gameNumber, String teamName, ArrayList<String[]> games) {
+        String team1 = games.get(gameNumber)[0];
+        String team2 = games.get(gameNumber)[2];
+        return teamName.equalsIgnoreCase(team1) || teamName.equalsIgnoreCase(team2);
+    }
+
+    public boolean madePrediction(int gameNumber, String username) {
+        int id = database.getPrediction("2021-06-02", database.getUserID(username), gameNumber);
+        return id != -1;
+    }
+
+}
