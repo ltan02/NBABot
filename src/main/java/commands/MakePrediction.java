@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class MakePrediction extends ListenerAdapter {
 
-    PostgreSQLJDBC database;
+    private static PostgreSQLJDBC database;
 
     public MakePrediction(PostgreSQLJDBC _database) {
         database = _database;
@@ -39,8 +39,8 @@ public class MakePrediction extends ListenerAdapter {
                     ArrayList<String[]> games = database.getGames("2021-06-02");
 
                     if (checkValidTeam(gameNumber-1, teamName, games)) {
-                        if (!madePrediction(gameNumber-1, username)) {
-                            database.addPrediction(gameNumber-1, teamName, "2021-06-02", database.getUserID(username));
+                        if (!madePrediction(gameNumber, username)) {
+                            database.addPrediction(gameNumber, teamName, "2021-06-02", database.getUserID(username));
                             //Message saying that prediction went through (command for changing prediction)
                             event.getChannel().sendMessage("Your prediction for " + teamName + " in game " + gameNumber + " has been processed. " +
                                     "If you wish to change your prediction, please use the **,cp** command.").queue();
@@ -69,7 +69,7 @@ public class MakePrediction extends ListenerAdapter {
         return teamName.equalsIgnoreCase(team1) || teamName.equalsIgnoreCase(team2);
     }
 
-    public boolean madePrediction(int gameNumber, String username) {
+    public static boolean madePrediction(int gameNumber, String username) {
         int id = database.getPrediction("2021-06-02", database.getUserID(username), gameNumber);
         return id != -1;
     }

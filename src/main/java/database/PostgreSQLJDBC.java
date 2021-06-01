@@ -199,25 +199,35 @@ public class PostgreSQLJDBC {
             Connection c = this.getConnection();
             Statement stmt = c.createStatement();
 
-            if(betterID != -1) {
-                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND betterID = %d AND gameNumber = %d", date, betterID, gameNumber);
-                ResultSet rs = stmt.executeQuery(getPrediction);
+            String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND betterID = %d AND gameNumber = %d", date, betterID, gameNumber);
+            ResultSet rs = stmt.executeQuery(getPrediction);
 
-                if (rs.next()) {
-                    return rs.getInt("predictionID");
-                }
-            } else {
-                String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND gameNumber = %d", date, gameNumber);
-                ResultSet rs = stmt.executeQuery(getPrediction);
-
-                if(rs.next()) {
-                    return rs.getInt("predictionID");
-                }
+            if (rs.next()) {
+                return rs.getInt("predictionID");
             }
+
         } catch(SQLException e) {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public String getPredictionString(String date, int betterID, int gameNumber) {
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionDate = '%s' AND betterID = %d AND gameNumber = %d", date, betterID, gameNumber);
+            ResultSet rs = stmt.executeQuery(getPrediction);
+
+            if (rs.next()) {
+                return rs.getString("teamName");
+            }
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public int getPoints(String username) {
@@ -277,6 +287,23 @@ public class PostgreSQLJDBC {
                 System.out.println("User is not in database");;
             }
             stmt.close();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updatePrediction(int predictionID, String newPrediction) {
+        try {
+            Connection c = this.getConnection();
+            c.setAutoCommit(false);
+            Statement stmt = c.createStatement();
+
+            String update = String.format("UPDATE guild_predictions set teamName = '%s' WHERE predictionID = %d", newPrediction, predictionID);
+            stmt.executeUpdate(update);
+
+            stmt.close();
+            c.commit();
             c.close();
         } catch(SQLException e) {
             e.printStackTrace();
