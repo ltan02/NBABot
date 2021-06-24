@@ -8,16 +8,16 @@ import java.util.ArrayList;
 public class APIMain {
     //dateFormat = yyyy-MM-dd
     //[team1ShortName, team1FullName, team2ShortName, team2FullName, score1, score2]
-    public ArrayList<String[]> getGames(String todayDate, String yesterdayDate) throws IOException, InterruptedException {
-        ArrayList<String[]> yesterdayGamesUTC = getInformation(yesterdayDate, true);
+    public ArrayList<String[]> getGames(String todayDate, String tomorrowDate) throws IOException, InterruptedException {
         ArrayList<String[]> todayGamesUTC = getInformation(todayDate, false);
+        ArrayList<String[]> tomorrowGamesUTC = getInformation(tomorrowDate, true);
 
-        yesterdayGamesUTC.addAll(todayGamesUTC);
-        return yesterdayGamesUTC;
+        tomorrowGamesUTC.addAll(todayGamesUTC);
+        return tomorrowGamesUTC;
     }
 
     //yesterday == 1 means we look at the games after 7am UTC and yesterday == 0 means we look at the games before 7am UTC
-    public ArrayList<String[]> getInformation(String date, boolean yesterday) throws IOException, InterruptedException {
+    public ArrayList<String[]> getInformation(String date, boolean tomorrow) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api-nba-v1.p.rapidapi.com/games/date/" + date))
                 .header("x-rapidapi-key", System.getenv("rapidapi_token"))
@@ -34,8 +34,8 @@ public class APIMain {
         for(int i = 0; i < arrayInformation.length; i++) {
             String current = arrayInformation[i];
             if(current.length() >= 29 && current.substring(1, 13).equals("startTimeUTC")) {
-                if((!yesterday && Integer.parseInt(current.substring(27,29)) < 7) ||
-                        (yesterday && Integer.parseInt(current.substring(27,29)) >= 7)) {
+                if((tomorrow && Integer.parseInt(current.substring(27,29)) < 7) ||
+                        (!tomorrow && Integer.parseInt(current.substring(27,29)) >= 7)) {
                     String team1ShortNameLine = arrayInformation[i + 14];
                     String team1FullNameLine = arrayInformation[i + 15];
                     String team1ScoreLine = arrayInformation[i + 18];

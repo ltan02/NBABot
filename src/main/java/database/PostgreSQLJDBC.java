@@ -71,6 +71,32 @@ public class PostgreSQLJDBC {
         }
     }
 
+    public void createGamesTable() {
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String remove3 = "DROP TABLE IF EXISTS games";
+            stmt.executeUpdate(remove3);
+
+            String createGames = "CREATE TABLE IF NOT EXISTS games (" +
+                    "gameID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY," +
+                    "date VARCHAR(20) NOT NULL," +
+                    "team1ShortName VARCHAR(5) NOT NULL," +
+                    "team1FullName VARCHAR(40) NOT NULL," +
+                    "team2ShortName VARCHAR(5) NOT NULL," +
+                    "team2FullName VARCHAR(40) NOT NULL," +
+                    "score1 INT NOT NULL," +
+                    "score2 INT NOT NULL)";
+            stmt.executeUpdate(createGames);
+
+            stmt.close();
+            c.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void addGameInformation(String date, String team1ShortName, String team1FullName, String team2ShortName, String team2FullName, int score1, int score2) {
         try {
             Connection c = this.getConnection();
@@ -138,7 +164,9 @@ public class PostgreSQLJDBC {
                 String team1FullName = rs.getString("team1FullName");
                 String team2ShortName = rs.getString("team2ShortName");
                 String team2FullName = rs.getString("team2FullName");
-                String[] gameInfo = {team1ShortName, team1FullName, team2ShortName, team2FullName};
+                String score1 = rs.getString("score1");
+                String score2 = rs.getString("score2");
+                String[] gameInfo = {team1ShortName, team1FullName, team2ShortName, team2FullName, score1, score2};
                 games.add(gameInfo);
             }
         } catch(SQLException e) {
@@ -192,6 +220,27 @@ public class PostgreSQLJDBC {
             e.printStackTrace();
         }
         return predictions;
+    }
+
+    public String[] getPredictionInformation(int predictionID) {
+        try {
+            Connection c = this.getConnection();
+            Statement stmt = c.createStatement();
+
+            String getPrediction = String.format("SELECT * FROM guild_predictions WHERE predictionID = %d", predictionID);
+            ResultSet rs = stmt.executeQuery(getPrediction);
+
+            if (rs.next()) {
+                String gameNumber = rs.getString("gameNumber");
+                String teamName = rs.getString("teamName");
+                String predictionDate = rs.getString("predictionDate");
+                String[] output = {gameNumber, teamName, predictionDate};
+                return output;
+            }
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return new String[1];
     }
 
     public Integer getPrediction(String date, int betterID, int gameNumber) {

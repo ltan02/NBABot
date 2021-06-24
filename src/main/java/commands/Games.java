@@ -23,9 +23,13 @@ public class Games extends ListenerAdapter {
 
         if(message[0].equalsIgnoreCase(",games")) {
             if (database.inDatabase(Objects.requireNonNull(event.getMember()).getUser().getName())) {
-                ArrayList<String[]> games = database.getGames("2021-06-02");
-                EmbedBuilder eb = displayInformation("2021-06-02", games);
-                event.getChannel().sendMessage(eb.build()).queue();
+                ArrayList<String[]> games = database.getGames("2021-06-24");
+                if(games.size() == 0) {
+                    event.getChannel().sendMessage("There are no games scheduled for " + "2021-06-24").queue();
+                } else {
+                    EmbedBuilder eb = displayInformation("2021-06-24", games);
+                    event.getChannel().sendMessage(eb.build()).queue();
+                }
             } else {
                 event.getChannel().sendMessage("Please join the bot first using the **,join** command.").queue();
             }

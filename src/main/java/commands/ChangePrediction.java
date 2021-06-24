@@ -47,7 +47,7 @@ public class ChangePrediction extends ListenerAdapter {
                     event.getChannel().sendMessage("Please enter a valid input of the form: **,cp <game number>**.").queue();
                 }
             } else {
-                event.getChannel().sendMessage("You have already joined the BettingBot.").queue();
+                event.getChannel().sendMessage("Please join the bot first using the **,join** command.").queue();
             }
         }
     }

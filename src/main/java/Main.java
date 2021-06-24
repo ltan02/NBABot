@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.utils.Compression;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -29,15 +30,23 @@ public class Main {
         jda.addEventListener(new Games(database));
         jda.addEventListener(new MakePrediction(database));
         jda.addEventListener(new ChangePrediction(database));
+        jda.addEventListener(new Results(database));
+        jda.addEventListener(new ListPredictions(database));
 
         APIMain api = new APIMain();
-        //ArrayList<String[]> games = api.getGames("2021-06-02", "2021-06-01");
-        /*
+
+        database.createGamesTable();
+        ArrayList<String[]> games = api.getGames("2021-06-23", "2021-06-24");
         for(int i = 0; i < games.size(); i++) {
             String[] current = games.get(i);
-            database.addGameInformation("2021-06-02", current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
+            database.addGameInformation("2021-06-23", current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
         }
-        */
+        games = api.getGames("2021-06-24", "2021-06-25");
+        for(int i = 0; i < games.size(); i++) {
+            String[] current = games.get(i);
+            database.addGameInformation("2021-06-24", current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
+        }
+
     }
 
     public void testDatabase(PostgreSQLJDBC database) {
