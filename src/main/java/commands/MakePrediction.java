@@ -10,10 +10,12 @@ import java.util.Objects;
 
 public class MakePrediction extends ListenerAdapter {
 
+    private static String todayDate;
     private static PostgreSQLJDBC database;
 
-    public MakePrediction(PostgreSQLJDBC _database) {
+    public MakePrediction(PostgreSQLJDBC _database, String _todayDate) {
         database = _database;
+        todayDate = _todayDate;
     }
 
     @Override
@@ -36,11 +38,11 @@ public class MakePrediction extends ListenerAdapter {
 
                     String teamName = message[2].toUpperCase(Locale.ROOT);
 
-                    ArrayList<String[]> games = database.getGames("2021-06-24");
+                    ArrayList<String[]> games = database.getGames(todayDate);
 
                     if (checkValidTeam(gameNumber-1, teamName, games)) {
-                        if (!madePrediction(gameNumber, username)) {
-                            database.addPrediction(gameNumber, teamName, "2021-06-24", database.getUserID(username));
+                        if (madePrediction(gameNumber, username)) {
+                            database.addPrediction(gameNumber, teamName, todayDate, database.getUserID(username));
                             //Message saying that prediction went through (command for changing prediction)
                             event.getChannel().sendMessage("Your prediction for " + teamName + " in game " + gameNumber + " has been processed. " +
                                     "If you wish to change your prediction, please use the **,cp** command.").queue();
@@ -70,8 +72,8 @@ public class MakePrediction extends ListenerAdapter {
     }
 
     public static boolean madePrediction(int gameNumber, String username) {
-        int id = database.getPrediction("2021-06-24", database.getUserID(username), gameNumber);
-        return id != -1;
+        int id = database.getPrediction(todayDate, database.getUserID(username), gameNumber);
+        return id == -1;
     }
 
 }

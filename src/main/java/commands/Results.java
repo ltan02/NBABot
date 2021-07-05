@@ -11,9 +11,11 @@ import java.util.Objects;
 public class Results extends ListenerAdapter {
 
     PostgreSQLJDBC database;
+    String yesterdayDate;
 
-    public Results(PostgreSQLJDBC _database) {
+    public Results(PostgreSQLJDBC _database, String _yesterdayDate) {
         database = _database;
+        yesterdayDate = _yesterdayDate;
     }
 
     @Override
@@ -32,8 +34,8 @@ public class Results extends ListenerAdapter {
     public EmbedBuilder displayInformation() {
         EmbedBuilder eb = new EmbedBuilder();
 
-        eb.setTitle("Results for " + "2021-06-23", null);
-        ArrayList<String[]> yesterdayScores = database.getGames("2021-06-23");
+        eb.setTitle("Results for " + yesterdayDate, null);
+        ArrayList<String[]> yesterdayScores = database.getGames(yesterdayDate);
         int counter = 1;
         for(int i = 0; i < yesterdayScores.size(); i++) {
             String score1 = yesterdayScores.get(i)[1] + " **" + yesterdayScores.get(i)[4] + "**";

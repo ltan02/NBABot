@@ -12,9 +12,11 @@ import java.util.Objects;
 public class Games extends ListenerAdapter {
 
     PostgreSQLJDBC database;
+    String todayDate;
 
-    public Games(PostgreSQLJDBC _database) {
+    public Games(PostgreSQLJDBC _database, String _todayDate) {
         database = _database;
+        todayDate = _todayDate;
     }
 
     @Override
@@ -23,11 +25,11 @@ public class Games extends ListenerAdapter {
 
         if(message[0].equalsIgnoreCase(",games")) {
             if (database.inDatabase(Objects.requireNonNull(event.getMember()).getUser().getName())) {
-                ArrayList<String[]> games = database.getGames("2021-06-24");
+                ArrayList<String[]> games = database.getGames(todayDate);
                 if(games.size() == 0) {
-                    event.getChannel().sendMessage("There are no games scheduled for " + "2021-06-24").queue();
+                    event.getChannel().sendMessage("There are no games scheduled for " + todayDate).queue();
                 } else {
-                    EmbedBuilder eb = displayInformation("2021-06-24", games);
+                    EmbedBuilder eb = displayInformation(todayDate, games);
                     event.getChannel().sendMessage(eb.build()).queue();
                 }
             } else {
