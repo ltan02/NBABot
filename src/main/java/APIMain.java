@@ -1,9 +1,10 @@
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class APIMain {
     //dateFormat = yyyy-MM-dd
@@ -18,15 +19,18 @@ public class APIMain {
 
     //yesterday == 1 means we look at the games after 7am UTC and yesterday == 0 means we look at the games before 7am UTC
     public ArrayList<String[]> getInformation(String date, boolean tomorrow) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api-nba-v1.p.rapidapi.com/games/date/" + date))
-                .header("x-rapidapi-key", System.getenv("rapidapi_token"))
-                .header("x-rapidapi-host", "api-nba-v1.p.rapidapi.com")
-                .method("GET", HttpRequest.BodyPublishers.noBody())
-                .build();
-        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        OkHttpClient client = new OkHttpClient();
 
-        String information = response.body();
+        Request request = new Request.Builder()
+                .url("https://api-nba-v1.p.rapidapi.com/games/date/" + date)
+                .get()
+                .addHeader("x-rapidapi-key", System.getenv("rapidapi_token"))
+                .addHeader("x-rapidapi-host", "api-nba-v1.p.rapidapi.com")
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        String information = Objects.requireNonNull(response.body()).string();
         String[] arrayInformation = information.split(",");
 
         //Retrieving information about each team [teamShortName, teamFullName, score]
