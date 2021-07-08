@@ -14,8 +14,7 @@ public class PostgreSQLJDBC {
         try {
             Class.forName("org.postgresql.Driver");
             c = DriverManager
-                    .getConnection("jdbc:postgresql://localhost:5432/NBABotDB",
-                            "postgres", System.getenv("PASSWORD"));
+                    .getConnection(System.getenv("DATABASE_URL"));
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getClass().getName()+": " +e.getMessage());
