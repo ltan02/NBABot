@@ -13,8 +13,7 @@ public class PostgreSQLJDBC {
         Connection c = null;
         try {
             Class.forName("org.postgresql.Driver");
-            c = DriverManager
-                    .getConnection(System.getenv("DATABASE_URL"));
+            c = DriverManager.getConnection(System.getenv("JDBC_DATABASE_URL"));
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getClass().getName()+": " +e.getMessage());
