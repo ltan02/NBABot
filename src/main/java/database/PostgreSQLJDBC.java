@@ -27,11 +27,11 @@ public class PostgreSQLJDBC {
             Connection c = this.getConnection();
             Statement stmt = c.createStatement();
 
-            String remove1 = "DROP TABLE IF EXISTS guild_predictions";
-            stmt.executeUpdate(remove1);
+            //String remove1 = "DROP TABLE IF EXISTS guild_predictions";
+            //stmt.executeUpdate(remove1);
 
-            String remove2 = "DROP TABLE IF EXISTS guild_points";
-            stmt.executeUpdate(remove2);
+            //String remove2 = "DROP TABLE IF EXISTS guild_points";
+            //stmt.executeUpdate(remove2);
 
             //String remove3 = "DROP TABLE IF EXISTS games";
             //stmt.executeUpdate(remove3);

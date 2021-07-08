@@ -39,8 +39,7 @@ public class ListPredictions extends ListenerAdapter {
                     String teamName = prediction[1];
 
                     String[] gameInformation = database.getGame(gameNumber);
-
-                    System.out.println(Arrays.toString(gameInformation));
+                    
                     if (teamName.equalsIgnoreCase(gameInformation[0])) {
                         eb.addField("", counter + ". **" + gameInformation[1] + "** v " + gameInformation[3], false);
                     } else if (teamName.equalsIgnoreCase(gameInformation[2])) {
