@@ -17,12 +17,25 @@ public class Main extends Thread {
     static PostgreSQLJDBC database;
     static APIMain api;
 
+    static Join join;
+    static Leaderboard leaderboard;
+    static Help help;
+    static Stats stats;
+    static Games games;
+    static MakePrediction makePrediction;
+    static ChangePrediction changePrediction;
+    static Results results;
+    static ListPredictions listPredictions;
+    static Wins wins;
+
+    static JDA jda;
+
     public static void main(String[] args) throws Exception {
 
         Main thread = new Main();
         thread.start();
 
-        JDA jda = JDABuilder.createDefault(System.getenv("discord_token"))
+        jda = JDABuilder.createDefault(System.getenv("discord_token"))
                 .setActivity(Activity.playing(",help"))
                 .disableCache(CacheFlag.MEMBER_OVERRIDES, CacheFlag.VOICE_STATE)
                 .setCompression(Compression.NONE)
@@ -34,16 +47,7 @@ public class Main extends Thread {
         String todayDate = getTodayDate();
         String yesterdayDate = getYesterdayDate();
 
-        jda.addEventListener(new Join(database));
-        jda.addEventListener(new Leaderboard(database));
-        jda.addEventListener(new Help());
-        jda.addEventListener(new Stats(database));
-        jda.addEventListener(new Games(database, todayDate));
-        jda.addEventListener(new MakePrediction(database, todayDate));
-        jda.addEventListener(new ChangePrediction(database, todayDate));
-        jda.addEventListener(new Results(database, yesterdayDate));
-        jda.addEventListener(new ListPredictions(database, todayDate));
-        jda.addEventListener(new Wins(database, yesterdayDate));
+        setup(true, todayDate, yesterdayDate);
 
         api = new APIMain();
 
@@ -63,14 +67,52 @@ public class Main extends Thread {
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
+                setup(false, getTodayDate(), getYesterdayDate());
             }
         }
+    }
+
+    public static void setup(boolean first, String todayDate, String yesterdayDate) {
+        if(!first) {
+            jda.removeEventListener(join);
+            jda.removeEventListener(games);
+            jda.removeEventListener(help);
+            jda.removeEventListener(makePrediction);
+            jda.removeEventListener(results);
+            jda.removeEventListener(changePrediction);
+            jda.removeEventListener(listPredictions);
+            jda.removeEventListener(wins);
+            jda.removeEventListener(leaderboard);
+            jda.removeEventListener(stats);
+        }
+
+        join = new Join(database);
+        leaderboard = new Leaderboard(database);
+        help = new Help();
+        stats = new Stats(database);
+        games = new Games(database, todayDate);
+        makePrediction = new MakePrediction(database, todayDate);
+        changePrediction = new ChangePrediction(database, todayDate);
+        results = new Results(database, yesterdayDate);
+        listPredictions = new ListPredictions(database, todayDate);
+        wins = new Wins(database, yesterdayDate);
+
+        jda.addEventListener(join);
+        jda.addEventListener(leaderboard);
+        jda.addEventListener(help);
+        jda.addEventListener(stats);
+        jda.addEventListener(games);
+        jda.addEventListener(makePrediction);
+        jda.addEventListener(changePrediction);
+        jda.addEventListener(results);
+        jda.addEventListener(listPredictions);
+        jda.addEventListener(wins);
     }
 
     public void updatePoints() {
         ArrayList<Integer> betterIDs = database.getUserIDs();
         for(Integer betterID : betterIDs) {
-            ArrayList<Integer> predictionIDs = database.getPredictions("2021-06-23", betterID);
+            ArrayList<Integer> predictionIDs = database.getPredictions(getYesterdayDate(), betterID);
             int points = 0;
             for(Integer predictionID : predictionIDs) {
                 String[] predictionInfo = database.getPredictionInformation(predictionID);
