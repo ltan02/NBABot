@@ -13,10 +13,12 @@ public class ListPredictions extends ListenerAdapter {
 
     PostgreSQLJDBC database;
     String todayDate;
+    String tomorrowDate;
 
-    public ListPredictions(PostgreSQLJDBC _database, String _todayDate) {
+    public ListPredictions(PostgreSQLJDBC _database, String _todayDate, String _tomorrowDate) {
         database = _database;
         todayDate = _todayDate;
+        tomorrowDate = _tomorrowDate;
     }
 
     @Override
@@ -26,32 +28,37 @@ public class ListPredictions extends ListenerAdapter {
         if(message[0].equalsIgnoreCase(",lp")) {
             if(database.inDatabase(Objects.requireNonNull(event.getMember()).getUser().getName())) {
                 int betterID = database.getUserID(event.getMember().getUser().getName());
-                ArrayList<Integer> predictions = database.getPredictions(todayDate, betterID);
-
-                EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle(event.getMember().getUser().getName() + "'s Predictions for " + todayDate);
-
-                int counter = 1;
-                for (Integer predictionID : predictions) {
-                    String[] prediction = database.getPredictionInformation(predictionID);
-
-                    int gameNumber = Integer.parseInt(prediction[0]);
-                    String teamName = prediction[1];
-
-                    String[] gameInformation = database.getGame(gameNumber);
-                    
-                    if (teamName.equalsIgnoreCase(gameInformation[0])) {
-                        eb.addField("", counter + ". **" + gameInformation[1] + "** v " + gameInformation[3], false);
-                    } else if (teamName.equalsIgnoreCase(gameInformation[2])) {
-                        eb.addField("", counter + ". " + gameInformation[1] + " v **" + gameInformation[3] + "**", false);
-                    }
-                    counter++;
-                }
-                event.getChannel().sendMessage(eb.build()).queue();
+                printPredictions(event, todayDate, betterID);
+                printPredictions(event, tomorrowDate, betterID);
             } else {
                 event.getChannel().sendMessage("Please join the bot first using the **,join** command.").queue();
             }
         }
+    }
+
+    public void printPredictions(MessageReceivedEvent event, String date, int betterID) {
+        ArrayList<Integer> predictions = database.getPredictions(date, betterID);
+
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle(event.getMember().getUser().getName() + "'s Predictions for " + date);
+
+        int counter = 1;
+        for (Integer predictionID : predictions) {
+            String[] prediction = database.getPredictionInformation(predictionID);
+
+            int gameNumber = Integer.parseInt(prediction[0]);
+            String teamName = prediction[1];
+
+            String[] gameInformation = database.getGame(gameNumber);
+
+            if (teamName.equalsIgnoreCase(gameInformation[0])) {
+                eb.addField("", counter + ". **" + gameInformation[1] + "** v " + gameInformation[3], false);
+            } else if (teamName.equalsIgnoreCase(gameInformation[2])) {
+                eb.addField("", counter + ". " + gameInformation[1] + " v **" + gameInformation[3] + "**", false);
+            }
+            counter++;
+        }
+        event.getChannel().sendMessage(eb.build()).queue();
     }
 
 }

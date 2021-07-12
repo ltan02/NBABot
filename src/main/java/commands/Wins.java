@@ -5,12 +5,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -18,10 +12,12 @@ public class Wins extends ListenerAdapter {
 
     PostgreSQLJDBC database;
     String yesterdayDate;
+    String previousDay;
 
-    public Wins(PostgreSQLJDBC _database, String _yesterdayDate) {
+    public Wins(PostgreSQLJDBC _database, String _yesterdayDate, String _previousDay) {
         database = _database;
         yesterdayDate = _yesterdayDate;
+        previousDay = _previousDay;
     }
 
     @Override
@@ -52,7 +48,7 @@ public class Wins extends ListenerAdapter {
                 }
 
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.setTitle(event.getMember().getUser().getName() + "'s winning predictions from " + yesterdayDate);
+                eb.setTitle(event.getMember().getUser().getName() + "'s winning predictions for " + previousDay);
                 if (winnings.size() == 1) {
                     eb.setDescription("You won a total of 1 prediction.");
                 } else {

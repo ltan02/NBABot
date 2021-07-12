@@ -131,14 +131,14 @@ public class PostgreSQLJDBC {
         }
     }
 
-    public void addPrediction(int gameNumber, String teamName, String predictionDate, int betterID) {
+    public void addPrediction(int gameNumber, String teamName, String predictionDate, String nextDate, int betterID) {
         try {
             Connection c = this.getConnection();
             c.setAutoCommit(false);
             Statement stmt = c.createStatement();
 
             String addMember = String.format("INSERT INTO guild_predictions(gameNumber, teamName, predictionDate, betterID, gameID) " +
-                    "VALUES (%d, '%s', '%s', %d, %d)", gameNumber, teamName, predictionDate, betterID, this.getGameID(predictionDate, teamName));
+                    "VALUES (%d, '%s', '%s', %d, %d)", gameNumber, teamName, predictionDate, betterID, this.getGameID(nextDate, teamName));
             stmt.executeUpdate(addMember);
 
             stmt.close();

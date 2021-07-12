@@ -11,11 +11,13 @@ import java.util.Objects;
 public class MakePrediction extends ListenerAdapter {
 
     private static String todayDate;
+    private static String tomorrowDate;
     private static PostgreSQLJDBC database;
 
-    public MakePrediction(PostgreSQLJDBC _database, String _todayDate) {
+    public MakePrediction(PostgreSQLJDBC _database, String _todayDate, String _tomorrowDate) {
         database = _database;
         todayDate = _todayDate;
+        tomorrowDate = _tomorrowDate;
     }
 
     @Override
@@ -42,7 +44,7 @@ public class MakePrediction extends ListenerAdapter {
 
                     if (checkValidTeam(gameNumber-1, teamName, games)) {
                         if (madePrediction(gameNumber, username)) {
-                            database.addPrediction(gameNumber, teamName, todayDate, database.getUserID(username));
+                            database.addPrediction(gameNumber, teamName, todayDate, tomorrowDate, database.getUserID(username));
                             //Message saying that prediction went through (command for changing prediction)
                             event.getChannel().sendMessage("Your prediction for " + teamName + " in game " + gameNumber + " has been processed. " +
                                     "If you wish to change your prediction, please use the **,cp** command.").queue();

@@ -44,14 +44,15 @@ public class Main extends Thread {
 
         database = new PostgreSQLJDBC();
 
-        String todayDate = getTodayDate();
-        String yesterdayDate = getYesterdayDate();
-
-        setup(true, todayDate, yesterdayDate);
+        setup(true);
 
         api = new APIMain();
 
         setupGames();
+        database.addMember("lancetan02");
+        database.addGameInformation("2021-07-11", "GSW", "Golden State Warriors", "PHX", "Phoenix Suns", 100, 80);
+        database.addPrediction(2, "GSW", "2021-07-10", "2021-07-11", 1);
+        updatePoints();
     }
 
     public void run() {
@@ -67,12 +68,12 @@ public class Main extends Thread {
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                 }
-                setup(false, getTodayDate(), getYesterdayDate());
+                setup(false);
             }
         }
     }
 
-    public static void setup(boolean first, String todayDate, String yesterdayDate) {
+    public static void setup(boolean first) {
         if(!first) {
             jda.removeEventListener(join);
             jda.removeEventListener(games);
@@ -90,12 +91,12 @@ public class Main extends Thread {
         leaderboard = new Leaderboard(database);
         help = new Help();
         stats = new Stats(database);
-        games = new Games(database, todayDate);
-        makePrediction = new MakePrediction(database, todayDate);
-        changePrediction = new ChangePrediction(database, todayDate);
-        results = new Results(database, yesterdayDate);
-        listPredictions = new ListPredictions(database, todayDate);
-        wins = new Wins(database, yesterdayDate);
+        games = new Games(database, getFutureDate(1));
+        makePrediction = new MakePrediction(database, getTodayDate(), getFutureDate(1));
+        changePrediction = new ChangePrediction(database, getTodayDate());
+        results = new Results(database, getPreviousDate(1));
+        listPredictions = new ListPredictions(database, getTodayDate(), getFutureDate(1));
+        wins = new Wins(database, getPreviousDate(2), getPreviousDate(1));
 
         jda.addEventListener(join);
         jda.addEventListener(leaderboard);
@@ -109,10 +110,10 @@ public class Main extends Thread {
         jda.addEventListener(wins);
     }
 
-    public void updatePoints() {
+    public static void updatePoints() {
         ArrayList<Integer> betterIDs = database.getUserIDs();
         for(Integer betterID : betterIDs) {
-            ArrayList<Integer> predictionIDs = database.getPredictions(getYesterdayDate(), betterID);
+            ArrayList<Integer> predictionIDs = database.getPredictions(getPreviousDate(2), betterID);
             int points = 0;
             for(Integer predictionID : predictionIDs) {
                 String[] predictionInfo = database.getPredictionInformation(predictionID);
@@ -138,22 +139,23 @@ public class Main extends Thread {
         return now.format(dtf);
     }
 
-    public static String getYesterdayDate() {
+    public static String getPreviousDate(int num) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        ZonedDateTime yesterday = ZonedDateTime.now(ZoneId.of("Canada/Pacific")).minusDays(1);
+        ZonedDateTime yesterday = ZonedDateTime.now(ZoneId.of("Canada/Pacific")).minusDays(num);
         return yesterday.format(dtf);
     }
 
-    public static String getTomorrowDate() {
+    public static String getFutureDate(int num) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        ZonedDateTime tomorrow = ZonedDateTime.now(ZoneId.of("Canada/Pacific")).plusDays(1);
+        ZonedDateTime tomorrow = ZonedDateTime.now(ZoneId.of("Canada/Pacific")).plusDays(num);
         return tomorrow.format(dtf);
     }
 
     public static void setupGames() throws IOException, InterruptedException {
         String todayDate = getTodayDate();
-        String yesterdayDate = getYesterdayDate();
-        String tomorrowDate = getTomorrowDate();
+        String yesterdayDate = getPreviousDate(1);
+        String tomorrowDate = getFutureDate(1);
+        String twoDaysAheadDate = getFutureDate(2);
         database.createGamesTable();
 
         ArrayList<String[]> games = api.getGames(yesterdayDate, todayDate);
@@ -161,10 +163,10 @@ public class Main extends Thread {
             String[] current = games.get(i);
             database.addGameInformation(yesterdayDate, current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
         }
-        games = api.getGames(yesterdayDate, tomorrowDate);
+        games = api.getGames(tomorrowDate, twoDaysAheadDate);
         for(int i = 0; i < games.size(); i++) {
             String[] current = games.get(i);
-            database.addGameInformation(todayDate, current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
+            database.addGameInformation(tomorrowDate, current[0], current[1], current[2], current[3], Integer.parseInt(current[4]), Integer.parseInt(current[5]));
         }
     }
 
