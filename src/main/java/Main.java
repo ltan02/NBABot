@@ -49,10 +49,6 @@ public class Main extends Thread {
         api = new APIMain();
 
         setupGames();
-        database.addMember("lancetan02");
-        database.addGameInformation("2021-07-11", "GSW", "Golden State Warriors", "PHX", "Phoenix Suns", 100, 80);
-        database.addPrediction(2, "GSW", "2021-07-10", "2021-07-11", 1);
-        updatePoints();
     }
 
     public void run() {
